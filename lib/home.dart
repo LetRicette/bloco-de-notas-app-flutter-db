@@ -12,7 +12,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _tituloEC = TextEditingController();
   final TextEditingController _descricaoEC = TextEditingController();
-  var _db = AnotacaoHelper();
+  final _db = AnotacaoHelper();
+  List<Anotacao?> _anotacoes = [];
 
   _exibirTelaCadastro() {
     showDialog(
@@ -58,12 +59,34 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
+  _recuperarAnotacoes() async {
+    List anotacoesRecuperadas = await _db.recuperarAnotacoes();
+    List<Anotacao> listaTemporaria = [];
+    for (var item in anotacoesRecuperadas) {
+      Anotacao anotacao = Anotacao.fromMap(item);
+      listaTemporaria.add(anotacao);
+    }
+    setState(() {
+      _anotacoes = listaTemporaria;
+    });
+    listaTemporaria = [];
+  }
+
   _salvarAnotacao() async {
     String titulo = _tituloEC.text;
     String descricao = _descricaoEC.text;
     Anotacao anotacao = Anotacao(titulo, DateTime.now().toString(), descricao);
     int resultado = await _db.salvarAnotacao(anotacao);
     print('salvar anotação: ' + resultado.toString());
+    _tituloEC.clear();
+    _descricaoEC.clear();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _recuperarAnotacoes();
   }
 
   @override
@@ -74,7 +97,23 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
-      body: Container(),
+      body: Column(
+        children: [
+          Expanded(
+              child: ListView.builder(
+                  itemCount: _anotacoes.length,
+                  itemBuilder: (context, index) {
+                    final anotacao = _anotacoes[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(anotacao!.titulo.toString()),
+                        subtitle:
+                            Text("${anotacao.data} - ${anotacao.descricao}"),
+                      ),
+                    );
+                  }))
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _exibirTelaCadastro,
         child: const Icon(Icons.add),
