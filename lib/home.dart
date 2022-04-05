@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:notas_diarias/helper/anotacao_helper.dart';
 import 'package:notas_diarias/model/anotacao_model.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -72,6 +74,14 @@ class _HomePageState extends State<HomePage> {
     listaTemporaria = [];
   }
 
+  _formatarData(String data) {
+    initializeDateFormatting("pt_BR");
+    var formatador = DateFormat("dd/MM/y HH:mm:ss");
+    DateTime dataConvertida = DateTime.parse(data);
+    String dataFormatada = formatador.format(dataConvertida);
+    return dataFormatada;
+  }
+
   _salvarAnotacao() async {
     String titulo = _tituloEC.text;
     String descricao = _descricaoEC.text;
@@ -80,6 +90,7 @@ class _HomePageState extends State<HomePage> {
     print('salvar anotação: ' + resultado.toString());
     _tituloEC.clear();
     _descricaoEC.clear();
+    _recuperarAnotacoes();
   }
 
   @override
@@ -107,8 +118,8 @@ class _HomePageState extends State<HomePage> {
                     return Card(
                       child: ListTile(
                         title: Text(anotacao!.titulo.toString()),
-                        subtitle:
-                            Text("${anotacao.data} - ${anotacao.descricao}"),
+                        subtitle: Text(
+                            "${_formatarData(anotacao.data!)} - ${anotacao.descricao}"),
                       ),
                     );
                   }))
