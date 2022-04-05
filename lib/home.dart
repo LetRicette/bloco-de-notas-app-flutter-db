@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:notas_diarias/helper/anotacao_helper.dart';
+import 'package:notas_diarias/model/anotacao_model.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -10,6 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _tituloEC = TextEditingController();
   final TextEditingController _descricaoEC = TextEditingController();
+  var _db = AnotacaoHelper();
 
   _exibirTelaCadastro() {
     showDialog(
@@ -29,7 +32,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 TextField(
-                  controller: _tituloEC,
+                  controller: _descricaoEC,
                   autofocus: true,
                   decoration: const InputDecoration(
                     labelText: "Descrição",
@@ -44,12 +47,23 @@ class _HomePageState extends State<HomePage> {
                 child: Text('Cancelar'),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  _salvarAnotacao();
+                  Navigator.pop(context);
+                },
                 child: Text('Salvar'),
               ),
             ],
           );
         });
+  }
+
+  _salvarAnotacao() async {
+    String titulo = _tituloEC.text;
+    String descricao = _descricaoEC.text;
+    Anotacao anotacao = Anotacao(titulo, DateTime.now().toString(), descricao);
+    int resultado = await _db.salvarAnotacao(anotacao);
+    print('salvar anotação: ' + resultado.toString());
   }
 
   @override
