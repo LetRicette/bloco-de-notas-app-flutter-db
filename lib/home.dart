@@ -17,12 +17,25 @@ class _HomePageState extends State<HomePage> {
   final _db = AnotacaoHelper();
   List<Anotacao?> _anotacoes = [];
 
-  _exibirTelaCadastro() {
+  _exibirTelaCadastro({Anotacao? anotacao}) {
+    String textoSalvarAtualizar = "";
+    if (anotacao == null) {
+      //salvando
+      _tituloEC.text = "";
+      _descricaoEC.text = "";
+      textoSalvarAtualizar = "Salvar";
+    } else {
+      //atualizando
+      _tituloEC.text = anotacao.titulo!;
+      _descricaoEC.text = anotacao.descricao!;
+      textoSalvarAtualizar = "Atualizar";
+    }
+
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text("Adicionar anotação"),
+            title: Text("$textoSalvarAtualizar anotação"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -51,10 +64,10 @@ class _HomePageState extends State<HomePage> {
               ),
               TextButton(
                 onPressed: () {
-                  _salvarAnotacao();
+                  _salvarAtualizarAnotacao(anotacao: anotacao);
                   Navigator.pop(context);
                 },
-                child: Text('Salvar'),
+                child: Text(textoSalvarAtualizar),
               ),
             ],
           );
@@ -82,12 +95,22 @@ class _HomePageState extends State<HomePage> {
     return dataFormatada;
   }
 
-  _salvarAnotacao() async {
+  _salvarAtualizarAnotacao({Anotacao? anotacao}) async {
     String titulo = _tituloEC.text;
     String descricao = _descricaoEC.text;
-    Anotacao anotacao = Anotacao(titulo, DateTime.now().toString(), descricao);
-    int resultado = await _db.salvarAnotacao(anotacao);
-    print('salvar anotação: ' + resultado.toString());
+
+    if (anotacao == null) {
+      //salvando
+      Anotacao anotacao =
+          Anotacao(titulo, DateTime.now().toString(), descricao);
+      int resultado = await _db.salvarAnotacao(anotacao);
+    } else {
+      //atualizando
+      anotacao.titulo = titulo;
+      anotacao.descricao = descricao;
+      int resultado = await _db.atualizarAnotacao(anotacao);
+    }
+
     _tituloEC.clear();
     _descricaoEC.clear();
     _recuperarAnotacoes();
@@ -120,6 +143,33 @@ class _HomePageState extends State<HomePage> {
                         title: Text(anotacao!.titulo.toString()),
                         subtitle: Text(
                             "${_formatarData(anotacao.data!)} - ${anotacao.descricao}"),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                _exibirTelaCadastro(anotacao: anotacao);
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 16),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {},
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 0),
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }))
