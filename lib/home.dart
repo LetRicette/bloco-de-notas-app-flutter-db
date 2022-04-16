@@ -95,6 +95,11 @@ class _HomePageState extends State<HomePage> {
     return dataFormatada;
   }
 
+  _removerAnotacao(int id) async {
+    await _db.removerAnotacao(id);
+    _recuperarAnotacoes();
+  }
+
   _salvarAtualizarAnotacao({Anotacao? anotacao}) async {
     String titulo = _tituloEC.text;
     String descricao = _descricaoEC.text;
@@ -159,7 +164,9 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                _removerAnotacao(anotacao.id!);
+                              },
                               child: const Padding(
                                 padding: EdgeInsets.only(right: 0),
                                 child: Icon(
